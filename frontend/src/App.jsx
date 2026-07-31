@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import ActivityCard from "./components/ActivityCard";
 import TimerScreen from "./components/TimerScreen";
@@ -8,54 +8,49 @@ function App() {
   const [activityEmoji, setActivityEmoji] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
-  const [activities, setActivities] = useState([
-  {
-    id: 101,
-    name: "Linux",
-    emoji: "🐧",
-  },
-  {
-    id: 102,
-    name: "Sketching",
-    emoji: "🎨",
-  },
-  {
-    id: 103,
-    name: "Reading",
-    emoji: "📖",
-  },
-  {
-    id: 104,
-    name: "AWS",
-    emoji: "☁️",
-  },
-]);
-function addActivity() {
+  const [activities, setActivities] = useState([]);
 
-  if (!activityName.trim()) {
-    alert("Please enter an activity name.");
-    return;
+  async function loadActivities() {
+    const response = await fetch("http://127.0.0.1:8000/activities");
+    const data = await response.json();
+    setActivities(data);
 }
 
-if (!activityEmoji) {
-    alert("Please select an emoji.");
-    return;
-}
+useEffect(() => {
+    loadActivities();
+}, []);
 
-    const newActivity = {
-        id: Date.now(),
-        name: activityName,
-        emoji: activityEmoji
-    };
+async function addActivity() {
 
-    setActivities([
-        ...activities,
-        newActivity
-    ]);
+    if (!activityName.trim()) {
+        alert("Please enter an activity name.");
+        return;
+    }
+
+    if (!activityEmoji) {
+        alert("Please select an emoji.");
+        return;
+    }
+
+    await fetch("http://127.0.0.1:8000/activities", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            name: activityName,
+            emoji: activityEmoji
+        })
+
+    });
+
+    await loadActivities();
 
     setActivityName("");
     setActivityEmoji("");
-
 }
 
 if (selectedActivity) {
