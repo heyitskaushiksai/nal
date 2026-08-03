@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import ActivityCard from "./components/ActivityCard";
 import TimerScreen from "./components/TimerScreen";
+import { getActivities, createActivity , getSessions} from "./services/api";
 
 function App() {
   const [activityName, setActivityName] = useState("");
@@ -9,15 +10,53 @@ function App() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [activities, setActivities] = useState([]);
+  const [sessions, setSessions] = useState([]);
 
-  async function loadActivities() {
-    const response = await fetch("http://127.0.0.1:8000/activities");
-    const data = await response.json();
+async function loadSessions() {
+
+    const data = await getSessions();
+
+    setSessions(data);
+
+}
+
+async function loadActivities() {
+
+    const data = await getActivities();
+
     setActivities(data);
+
+}
+
+function getActivity(activityId) {
+
+    return activities.find(
+        (activity) => activity.id === activityId
+    );
+
+}
+
+function formatDuration(seconds) {
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    }
+
+    if (minutes > 0) {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+
+    return `${remainingSeconds}s`;
+
 }
 
 useEffect(() => {
     loadActivities();
+    loadSessions();
 }, []);
 
 async function addActivity() {
@@ -32,20 +71,12 @@ async function addActivity() {
         return;
     }
 
-    await fetch("http://127.0.0.1:8000/activities", {
+    await createActivity({
 
-        method: "POST",
+    name: activityName,
+    emoji: activityEmoji
 
-        headers: {
-            "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-            name: activityName,
-            emoji: activityEmoji
-        })
-
-    });
+});
 
     await loadActivities();
 
@@ -57,7 +88,9 @@ if (selectedActivity) {
     return (
         <TimerScreen
             activity={selectedActivity}
-            goBack={() => setSelectedActivity(null)}
+            goBack={() => {
+                loadSessions();
+                setSelectedActivity(null)}}
         />
     );
 }
@@ -110,6 +143,28 @@ if (selectedActivity) {
     />
 </div>
 ))}
+
+<h2>Today's Sessions</h2>
+
+{sessions.map((session) => {
+
+    const activity = getActivity(session.activity_id);
+
+    return (
+
+        <div key={session.session_id}>
+
+            {activity?.emoji} {activity?.name}
+
+            {" - "}
+
+            {formatDuration(session.duration)}
+
+        </div>
+
+    );
+
+})}
     </div>
   );
 }

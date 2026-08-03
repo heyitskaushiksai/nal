@@ -8,5 +8,10 @@
         "id": 2,
         "name": "gaming",
         "emoji": "\ud83c\udfae"
+    },
+    {
+        "id": 3,
+        "name": "study",
+        "emoji": "\ud83d\udcd6"
     }
 ]

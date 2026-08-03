@@ -5,6 +5,6 @@ function ActivityCard(props) {
         </p>
         
     );
-}
+} 
 
 export default ActivityCard;

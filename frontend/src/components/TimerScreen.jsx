@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createSession } from "../services/api";
 
 function TimerScreen(props) {
 
@@ -42,14 +43,28 @@ function TimerScreen(props) {
                 )
             }
             <button
-                onClick={() => {
+                onClick={async () => {
+
                     setIsRunning(false);
+
+                    await createSession({
+
+                        activity_id: props.activity.id,
+
+                        duration: seconds
+
+                    }); 
+
+                    props.goBack();
+
                     setSeconds(0);
+
                 }}
+                
             >
                 ⏹ Stop
             </button>
-
+            
             <br /><br />
 
             <button onClick={props.goBack}>
